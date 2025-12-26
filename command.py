@@ -1,13 +1,12 @@
-import subprocess
 import os
-import datetime
+import subprocess
+from datetime import datetime
 
 # --- CONFIGURATION ---
 CHANGELOG_FILE = "CHANGELOG.md"
-REPO_PATH = "."
 
-# --- SMART DICTIONARY (The Brain) ---
-# This maps folder/filenames to readable context
+# --- SMART CONTEXT MAP ---
+# Detects what you worked on based on filenames
 CONTEXT_MAP = {
     "admin": "🛡️ Admin Panel",
     "css": "🎨 UI/UX Design",
@@ -17,100 +16,86 @@ CONTEXT_MAP = {
     "db.sql": "🗄️ Database Schema",
     "login": "🔐 Authentication",
     "register": "🔐 User Onboarding",
-    "includes": "⚙️ Backend Config",
-    "README.md": "📚 Documentation",
     "assets": "🖼️ Assets",
+    "includes": "⚙️ Configuration",
+    "dashboard": "🏠 Dashboard",
 }
 
 def run_command(command):
-    """Runs a shell command and returns output."""
-    result = subprocess.run(command, shell=True, capture_output=True, text=True)
-    return result.stdout.strip()
+    return subprocess.run(command, shell=True, capture_output=True, text=True).stdout.strip()
 
-def get_changes():
-    """Detects modified, added, or deleted files."""
-    output = run_command("git status --porcelain")
-    if not output:
-        return []
+def get_commit_changes():
+    # Git command to see files changed in the HEAD commit
+    output = run_command("git diff-tree --no-commit-id --name-status -r HEAD")
     
     changes = []
-    for line in output.split("\n"):
-        status = line[:2].strip()
-        filepath = line[3:]
-        filename = os.path.basename(filepath)
-        
-        # Determine Action
-        action = "Update"
-        if "A" in status or "?" in status: action = "New Feature"
-        elif "D" in status: action = "Removed"
-        elif "M" in status: action = "Enhanced"
+    if not output:
+        return changes
 
-        # Determine Context (Guessing work)
-        context = "General"
+    for line in output.split("\n"):
+        parts = line.split()
+        if len(parts) < 2: continue
+        
+        status = parts[0]
+        filepath = parts[1]
+        filename = os.path.basename(filepath)
+
+        # Ignore the changelog itself and the script
+        if filename in [CHANGELOG_FILE, "command.py", ".github"]:
+            continue
+
+        # Determine Action
+        action = "Updated"
+        if status.startswith("A"): action = "New Feature Added"
+        elif status.startswith("D"): action = "Removed"
+        elif status.startswith("M"): action = "Enhanced"
+
+        # Determine Context
+        context = "General Tweaks"
         for key, value in CONTEXT_MAP.items():
             if key in filepath:
                 context = value
                 break
         
-        changes.append(f"- **{context}:** {action} in `{filename}`")
+        changes.append(f"- **{context}:** {action} -> `{filename}`")
     
     return changes
 
 def update_changelog(changes):
-    """Prepends new changes to the Changelog file."""
     if not changes:
-        print("No changes to record.")
-        return
+        print("No significant changes found in this commit.")
+        return False
 
-    today = datetime.date.today().isoformat()
-    header = f"\n## [Auto-Sync] - {today}\n"
-    new_entry = header + "\n".join(changes) + "\n"
+    date_str = datetime.now().strftime("%Y-%m-%d")
+    # A generic header, or you can try to fetch the commit message if you want
+    new_entry = f"\n## [Update] - {date_str}\n" + "\n".join(changes) + "\n"
 
-    # Read existing content
+    content = ""
     if os.path.exists(CHANGELOG_FILE):
         with open(CHANGELOG_FILE, "r") as f:
             content = f.read()
     else:
         content = "# 🔄 Changelog\n\n"
 
-    # Find where to insert (after the main header)
-    insert_pos = content.find("\n## ")
-    if insert_pos == -1:
-        # If no previous versions, just append
-        final_content = content + new_entry
+    # Insert after the main title
+    # If using the format '# 🔄 Changelog', we append after the first double newline
+    if "\n\n" in content:
+        parts = content.split("\n\n", 1)
+        final_content = parts[0] + "\n" + new_entry + "\n" + parts[1]
     else:
-        # Insert before the first version header
-        final_content = content[:insert_pos] + new_entry + content[insert_pos:]
+        final_content = content + new_entry
 
     with open(CHANGELOG_FILE, "w") as f:
         f.write(final_content)
     
-    print(f"✅ Updated {CHANGELOG_FILE}")
-
-def main():
-    print("🤖 LazyBot is analyzing your work...")
-    
-    # 1. Get Changes
-    changes = get_changes()
-    if not changes:
-        print("Everything is clean! Nothing to push.")
-        return
-
-    # 2. Update Changelog
-    update_changelog(changes)
-
-    # 3. Git Operations
-    print("🚀 Pushing to GitHub...")
-    run_command("git add .")
-    
-    # Create a summary commit message
-    commit_msg = f"chore: Auto-update {len(changes)} files via LazyBot"
-    run_command(f'git commit -m "{commit_msg}"')
-    
-    # Push
-    push_output = run_command("git push origin main")
-    print(push_output)
-    print("✨ DONE! You can go back to sleep.")
+    return True
 
 if __name__ == "__main__":
-    main()
+    print("🤖 Analyzing commit...")
+    changes = get_commit_changes()
+    
+    if update_changelog(changes):
+        print(f"✅ {CHANGELOG_FILE} updated.")
+        # We allow the GitHub Action to handle the git push part
+    else:
+        print("💤 No changes to record.")
