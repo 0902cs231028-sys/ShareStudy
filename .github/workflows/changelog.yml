@@ -1,9 +1,11 @@
-name: 🤖 Auto-Changelog Supreme
+name: 🤖 Auto-Changelog Bot
 
 on:
   push:
     branches:
       - main
+    paths-ignore:
+      - 'CHANGELOG.md'  # CRITICAL: Prevents infinite loop!
 
 permissions:
   contents: write
@@ -15,20 +17,26 @@ jobs:
       - name: 📥 Checkout Code
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0
+          fetch-depth: 2  # We need history to compare changes
 
-      - name: 📝 Generate Changelog
-        uses: TriPSs/conventional-changelog-action@v3
-        id: changelog
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@v4
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          output-file: "CHANGELOG.md"
-          skip-version-file: "true"
-          fallback-version: "1.0.0"
+          python-version: '3.x'
+
+      - name: 🧠 Run Smart Analysis (command.py)
+        run: python command.py
 
       - name: 🚀 Commit & Push Changes
-        if: steps.changelog.outputs.skipped == 'false'
-        uses: stefanzweifel/git-auto-commit-action@v4
-        with:
-          commit_message: "docs(changelog): 🔄 Auto-update CHANGELOG.md [skip ci]"
-          file_pattern: CHANGELOG.md
+        run: |
+          git config --global user.name "StudyShare Bot"
+          git config --global user.email "bot@studyshare.com"
+          
+          # Check if CHANGELOG was modified
+          if [[ `git status --porcelain` ]]; then
+            git add CHANGELOG.md
+            git commit -m "docs: 📝 Auto-updated Changelog [skip ci]"
+            git push
+          else
+            echo "No changes to push"
+          fi
