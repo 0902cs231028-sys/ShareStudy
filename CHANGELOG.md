@@ -1,5 +1,8 @@
 # 🔄 Changelog
 
+## [Update] - 2025-12-26
+- **General Tweaks:** Enhanced -> `changelog.yml`
+
 All notable changes to **StudyShare** will be documented in this file.
 
 ## [1.0.0] - 2025-12-26
