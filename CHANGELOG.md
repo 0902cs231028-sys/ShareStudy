@@ -1,5 +1,8 @@
 # 🔄 Changelog
 
+## [Auto-Log] - 2025-12-31
+- **🛡️ Admin Panel:** ✨ Added function `adminResetPass`, ✨ Added function `fetchMonitor` in `dashboard.php`
+
 ## [Auto-Log] - 2025-12-28
 - **🤖 GitHub Actions:** ⚡ Update in `changelog.yml`
 
