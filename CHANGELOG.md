@@ -1,15 +1,8 @@
 # 🔄 Changelog
 
 ## [Auto-Log] - 2025-12-31
-- **🖼️ Image:** 🗑️ Deleted `IMG-20251125-WA0007.jpg`
 - **🖼️ Image:** 🎉 Created `sample.jpg`
 
-## [Auto-Log] - 2025-12-31
-- **🖼️ Image:** 🎉 Created `IMG-20251125-WA0007.jpg`
-
-## [Auto-Log] - 2025-12-31
-- **🔧 General:** 🗑️ Deleted `sample.pdf`
-- **🔧 General:** 🎉 Created `sample.pdf`
 
 ## [Auto-Log] - 2025-12-31
 - **🐘 Backend (PHP):** 🎉 Created `clear_warning.php`
