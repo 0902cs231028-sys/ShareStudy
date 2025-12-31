@@ -1,6 +1,9 @@
 # 🔄 Changelog
 
 ## [Auto-Log] - 2025-12-31
+- **🐘 Backend (PHP):** ⚡ Update in `dashboard.php`
+
+## [Auto-Log] - 2025-12-31
 - **📖 Main Documentation:** ⚡ Update in `README.md`
 
 ## [Auto-Log] - 2025-12-31
