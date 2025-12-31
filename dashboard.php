@@ -263,7 +263,7 @@ $files = $stmt_files->fetchAll();
     let currentUserId = <?php echo $user_id; ?>;
 
     function fetchMessages() {
-        fetch('chat_backend.php?action=fetch')
+        fetch('message.php?action=fetch')
         .then(res => res.json())
         .then(res => {
             if(res.status === 'success') {
@@ -305,7 +305,7 @@ $files = $stmt_files->fetchAll();
         formData.append('action', 'send');
         formData.append('message', msg);
 
-        fetch('chat_backend.php', { method: 'POST', body: formData })
+        fetch('message.php', { method: 'POST', body: formData })
         .then(() => {
             chatInput.value = '';
             fetchMessages(); // Refresh instantly
@@ -319,7 +319,7 @@ $files = $stmt_files->fetchAll();
         const formData = new FormData();
         formData.append('action', 'delete');
         formData.append('msg_id', id);
-        fetch('chat_backend.php', { method: 'POST', body: formData })
+        fetch('message.php', { method: 'POST', body: formData })
         .then(() => fetchMessages());
     };
 
